@@ -5,6 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    base: '/EquiAi-Nexus-GBV-System/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
