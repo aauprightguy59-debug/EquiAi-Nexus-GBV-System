@@ -1855,7 +1855,19 @@ export default function App() {
             </div>
             <div>
               <p className="font-bold font-display text-white text-sm">EquiAI Nexus Platform</p>
-              <p className="text-[11px] text-purple-200 mt-0.5">Developed by Gender Equality Club Nigeria (GECN).</p>
+              <p className="text-[11px] text-purple-200 mt-0.5">
+                Developed by{" "}
+                <a
+                  href="https://gecnigeria.org"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gecn-gold hover:underline font-semibold inline-flex items-center gap-0.5 transition-colors hover:text-amber-300"
+                >
+                  Gender Equality Club Nigeria (GECN)
+                  <ExternalLink className="w-2.5 h-2.5 inline-block shrink-0 ml-0.5" />
+                </a>
+                .
+              </p>
               <p className="text-[11px] text-slate-400">
                 Address: No. 2 A.A. Iortyom Street, Adekaa, Gboko. Email: <a href="mailto:contact@gecnigeria.org" className="text-gecn-gold hover:underline">contact@gecnigeria.org</a>
               </p>
