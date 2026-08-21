@@ -1,0 +1,8 @@
+{
+  "name": "Remix: EquiAI Nexus",
+  "description": "AI-powered real-time GBV reporting, victim support, automated resource allocation, and entrepreneurship mentoring.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
