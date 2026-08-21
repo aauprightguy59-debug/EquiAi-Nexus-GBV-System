@@ -1,6 +1,6 @@
 {
   "name": "Remix: EquiAI Nexus",
-  "description": "AI-powered real-time GBV reporting, victim support, automated resource allocation, and entrepreneurship mentoring.",
+  "description": "AI-powered real-time GBV reporting with zero-data USSD model for rural women and feature phones, victim support, automated resource allocation, and entrepreneurship mentoring.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

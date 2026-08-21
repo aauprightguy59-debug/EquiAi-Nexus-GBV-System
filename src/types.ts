@@ -18,11 +18,21 @@ export type UrgencyType = 'Low' | 'Medium' | 'High' | 'Critical';
 
 export type ReportStatusType = 'Pending' | 'Classified' | 'Actioned' | 'Referred';
 
+export type UssdLanguage = 'en' | 'tiv' | 'idoma' | 'hausa' | 'pidgin';
+
 export interface AssignedResource {
   type: string;
   name: string;
   contact: string;
   status: 'Pending' | 'Dispatched' | 'Completed';
+}
+
+export interface UssdMeta {
+  dialCode: string;
+  language: UssdLanguage;
+  rawPath: string;
+  needsCallback: boolean;
+  ticketNumber: string;
 }
 
 export interface Report {
@@ -32,12 +42,13 @@ export interface Report {
   description: string;
   date: string;
   location: string;
-  reportedBy: 'Survivor' | 'Community Advocate' | 'Healthcare Worker' | 'SMS Gateway' | 'Anonymous';
+  reportedBy: 'Survivor' | 'Community Advocate' | 'Healthcare Worker' | 'SMS Gateway' | 'USSD Gateway' | 'Anonymous';
   status: ReportStatusType;
   urgency: UrgencyType;
   smsContent?: string;
   cleaningLog?: string;
   assignedResource?: AssignedResource;
+  ussdMeta?: UssdMeta;
 }
 
 export interface ResourceAllocation {
@@ -54,4 +65,18 @@ export interface Message {
   sender: 'user' | 'assistant';
   text: string;
   timestamp: string;
+}
+
+export interface UssdSessionRequest {
+  sessionId: string;
+  serviceCode: string;
+  phoneNumber: string;
+  text: string;
+}
+
+export interface UssdSessionResponse {
+  message: string;
+  action: 'CON' | 'END';
+  rawResponse: string;
+  reportCreated?: Report;
 }

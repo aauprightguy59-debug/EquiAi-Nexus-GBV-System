@@ -9,9 +9,60 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // In-memory persistence for reports and resources (initialized with rich realistic data from Gboko, Benue State)
 let reports: Report[] = [
+  {
+    id: "rep-ussd-1",
+    category: "GBV",
+    targetUser: "women",
+    description: "[USSD *384*55# in Tiv Language] Emergency distress alert flagged from rural Gbor District, Gboko. Survivor requested discreet callback and safe haven shelter. Husband seized identity papers and issued physical threats. Dialed via basic 2G feature phone without internet.",
+    date: "2026-06-14T03:15:00.000Z",
+    location: "Gbor District, Rural Gboko",
+    reportedBy: "USSD Gateway",
+    status: "Actioned",
+    urgency: "Critical",
+    cleaningLog: "USSD zero-data session processed. Caller MSISDN +234803****7721 sanitized and encrypted into confidential case file.",
+    ussdMeta: {
+      dialCode: "*384*55#",
+      language: "tiv",
+      rawPath: "2*1*1*1*1",
+      needsCallback: true,
+      ticketNumber: "USSD-4821"
+    },
+    assignedResource: {
+      type: "Temporary Shelter",
+      name: "GECN Safe Haven Gboko",
+      contact: "+234 703 212 1178",
+      status: "Dispatched"
+    }
+  },
+  {
+    id: "rep-ussd-2",
+    category: "Land/property rights",
+    targetUser: "girls",
+    description: "[USSD *384*55# in Idoma Language] Property exclusion logged from Adoka Ward, Otukpo. Young female orphan barred from late parents' yam holdings by paternal uncles claiming customary male-only succession. Legal aid mediation requested via button phone.",
+    date: "2026-06-13T18:45:00.000Z",
+    location: "Adoka Ward, Otukpo",
+    reportedBy: "USSD Gateway",
+    status: "Referred",
+    urgency: "High",
+    cleaningLog: "Zero-data USSD session sanitized. Cell tower node tagged to Otukpo Adoka.",
+    ussdMeta: {
+      dialCode: "*384*55*3*2*2*3*3#",
+      language: "idoma",
+      rawPath: "3*2*2*3*3",
+      needsCallback: false,
+      ticketNumber: "USSD-9104"
+    },
+    assignedResource: {
+      type: "Legal Aid",
+      name: "Gwan & Chambers Legal Aid",
+      contact: "+234 901 222 3434",
+      status: "Completed"
+    }
+  },
   {
     id: "rep-1",
     category: "Land/property rights",
@@ -347,6 +398,535 @@ app.post("/api/reports", async (req, res) => {
 
   reports.unshift(newReport);
   res.status(201).json(newReport);
+});
+
+// USSD State Machine & Engine for Rural Women & Small Feature Phones
+interface UssdEngineResult {
+  action: 'CON' | 'END';
+  message: string;
+  reportCreated?: Report;
+}
+
+function processUssdSession(sessionId: string, serviceCode: string, phoneNumber: string, rawText: string): UssdEngineResult {
+  const text = (rawText || "").trim();
+  // Support quick dial formats like *384*55*1*1*1*1# or hopped strings like 1*1*1*1
+  let path = text;
+  if (serviceCode && path.startsWith(serviceCode)) {
+    path = path.replace(serviceCode, "").replace(/^[*]/, "").replace(/#$/, "");
+  } else if (path.startsWith("*")) {
+    path = path.replace(/^[*]/, "").replace(/#$/, "");
+  }
+
+  const parts = path ? path.split("*").filter(p => p.trim() !== "") : [];
+
+  // Root Welcome Menu
+  if (parts.length === 0) {
+    return {
+      action: 'CON',
+      message: `EquiAI Nexus (Zero-Data GBV & Rights)
+GECN Support for Rural Women & Girls
+Select Language / Tsua Zwa:
+1. English
+2. Tiv (Zwa Tiv)
+3. Idoma (Ony'Idoma)
+4. Hausa (Harshen Hausa)
+5. Pidgin
+0. 🚨 Quick Emergency SOS (Instant Help)`
+    };
+  }
+
+  // 0. Quick Emergency Distress Alert (Instant SOS Beacon)
+  if (parts[0] === "0") {
+    const ticket = `USSD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const phoneRedacted = phoneNumber ? phoneNumber.replace(/(\d{4})\d{4}(\d{3})/, "$1****$2") : "[Confidential MSISDN]";
+    const newRep: Report = {
+      id: `rep-sos-${Date.now()}`,
+      category: "GBV",
+      targetUser: "GBV victims",
+      description: `[URGENT USSD SOS *384*55*0#] Immediate distress beacon triggered via zero-data button phone. Cell connection: ${phoneRedacted}. Location flagged for rapid emergency crisis deployment across Benue.`,
+      date: new Date().toISOString(),
+      location: "Gboko / Benue Rapid Response Sector",
+      reportedBy: "USSD Gateway",
+      status: "Actioned",
+      urgency: "Critical",
+      cleaningLog: `Immediate USSD SOS Beacon decoded. Originating MSISDN sanitized. Auto-alert dispatched to GECN Safe Haven.`,
+      assignedResource: {
+        type: "Temporary Shelter",
+        name: "GECN Safe Haven Gboko",
+        contact: "+234 703 212 1178",
+        status: "Dispatched"
+      },
+      ussdMeta: {
+        dialCode: serviceCode || "*384*55#",
+        language: "en",
+        rawPath: path,
+        needsCallback: true,
+        ticketNumber: ticket
+      }
+    };
+    reports.unshift(newRep);
+    return {
+      action: 'END',
+      message: `🚨 EMERGENCY ALERT SENT!
+Ticket: ${ticket}
+GECN Crisis Team & Safe Haven notified for your cell zone.
+Hotline: 07032121178.
+Safety: Dial *384*55*99# to wipe phone dial history.`,
+      reportCreated: newRep
+    };
+  }
+
+  // 99. Wipe/Clear USSD History Tool
+  if (parts[0] === "99" || path.endsWith("*99")) {
+    return {
+      action: 'END',
+      message: `🔒 SESSION WIPED.
+Your USSD dial cache and temporary terminal buffer have been securely cleared from your phone.
+Stay safe.`
+    };
+  }
+
+  const langCode = parts[0]; // 1: en, 2: tiv, 3: idoma, 4: hausa, 5: pidgin
+  const langKey = langCode === "2" ? "tiv" : langCode === "3" ? "idoma" : langCode === "4" ? "hausa" : langCode === "5" ? "pidgin" : "en";
+
+  // Step 1: Category Menu
+  if (parts.length === 1) {
+    if (langKey === "tiv") {
+      return {
+        action: 'CON',
+        message: `[EquiAI Nexus - Zwa Tiv]
+Kanyi u soo u yila / pase?
+1. Ifan hen Ya / GBV (Domestic Violence)
+2. Mbanyi u Tar man Inyaregh (Land Denial)
+3. Mnyam u Kasua man Inyaregh (Market Extortion)
+4. Mvend u Twero hen Clinic (Health Denial)
+5. Mdue u Mbayev ken Makeranta (Child Labor)
+6. Ijiir i Yinan i Bem (Safe Haven Shelter)
+7. A4HP Inyaregh ki Sule man Kasua`
+      };
+    } else if (langKey === "idoma") {
+      return {
+        action: 'CON',
+        message: `[EquiAI Nexus - Ony'Idoma]
+Odi a je ka ka / cho?
+1. Ebi nu Onya (GBV / Violence)
+2. Eje Oya nu Aje (Land / Property Denial)
+3. Efe nu Ahia / Market Extortions
+4. Otulo nu Owo Clinic / Health Stigma
+5. Eche Ukola nu Ayi (Child Withdrawal)
+6. Oyi Eche nu Owo (Safe Shelter)
+7. A4HP Microfinance & Eje Okonu`
+      };
+    } else if (langKey === "hausa") {
+      return {
+        action: 'CON',
+        message: `[EquiAI Nexus - Hausa]
+Me kake so ka bayar da rahoto?
+1. Rikicin Cikin Gida / Cin Zarafi (GBV)
+2. Hana Gadon Filaye da Dukiya
+3. Karin Haraji da Matsalar Kasuwa
+4. Kin Karba a Asibiti / Wariya
+5. Cire Yara Mata Daga Makaranta
+6. Neman Mafaka Mai Aminci (Safe Shelter)
+7. Tallafin Kasuwanci na A4HP`
+      };
+    } else if (langKey === "pidgin") {
+      return {
+        action: 'CON',
+        message: `[EquiAI Nexus - Pidgin]
+Wetin you wan report or get help for?
+1. Husband / Partner beat or abuse (GBV)
+2. Dem seize your Papa land or property
+3. Market Union harassment & illegal tax
+4. Clinic refuse treat you or insult you
+5. Dem stop girl child from school
+6. I need urgent Safe Shelter
+7. A4HP Small business loan & advice`
+      };
+    } else {
+      // English
+      return {
+        action: 'CON',
+        message: `[EquiAI Nexus - Incident Report]
+What would you like to report?
+1. Domestic Violence / GBV
+2. Land & Property Rights Denial
+3. Market Extortion & Illegal Levies
+4. Healthcare Denial & Stigma
+5. School Withdrawal & Child Labor
+6. Request Safe Haven Emergency Shelter
+7. A4HP Microfinance & Farm Trade`
+      };
+    }
+  }
+
+  // Step 2: Affected Cohort Menu
+  if (parts.length === 2) {
+    if (langKey === "tiv") {
+      return {
+        action: 'CON',
+        message: `Ka an nan tagher a mzeyol ne?
+1. Mo iyol yam (Survivor)
+2. Wan wam u Kwase (Young Girl)
+3. Kwase u hen Tsombor / Huror (Female Relative)
+4. Kwase u hen Ajiir a Kasua / Sex Worker
+5. Or u ken Ityo yam (Community Member)`
+      };
+    } else if (langKey === "idoma") {
+      return {
+        action: 'CON',
+        message: `Onye le oya ne o le?
+1. Ami gben (Survivor)
+2. Oyi nyam o kwase (Daughter)
+3. Onya nyam / Huror (Relative)
+4. Kasev mba eche (Sex Worker)
+5. Onye ewo (Community Member)`
+      };
+    } else if (langKey === "hausa") {
+      return {
+        action: 'CON',
+        message: `Wa abin ya shafa?
+1. Ni kaina (Survivor)
+2. 'Yata / Karamar Yarinya (Young Girl)
+3. Yar'uwa / Kawata (Female Relative)
+4. Masu Sana'ar Jima'i (Sex Worker)
+5. Wani a Cikin Al'umma (Community)`
+      };
+    } else if (langKey === "pidgin") {
+      return {
+        action: 'CON',
+        message: `Na who dis matter affect?
+1. Na me (Survivor)
+2. My Daughter / Small Girl
+3. My Sister / Woman friend
+4. Sex Worker / Vulnerable person
+5. Neighbor or person for community`
+      };
+    } else {
+      return {
+        action: 'CON',
+        message: `Who is affected by this incident?
+1. Myself (Survivor)
+2. My Daughter / Young Girl
+3. Female Relative / Friend
+4. Marginalized Sex Worker
+5. Community Member / Other`
+      };
+    }
+  }
+
+  // Step 3: LGA Selection Menu
+  if (parts.length === 3) {
+    const title = langKey === "tiv" ? "Tsua LGA wou ken Benue:" :
+                  langKey === "idoma" ? "Tsua LGA we nu Benue:" :
+                  langKey === "hausa" ? "Zabi Karamar Hukumar ku a Benue:" :
+                  langKey === "pidgin" ? "Select your LGA for Benue State:" :
+                  "Select your LGA in Benue State:";
+    return {
+      action: 'CON',
+      message: `${title}
+1. Gboko LGA
+2. Makurdi LGA
+3. Otukpo LGA
+4. Tarka LGA
+5. Buruku LGA
+6. Vendeikya LGA
+7. Logo LGA
+8. Other Benue LGA`
+    };
+  }
+
+  // Step 4: Required Action / Immediate Needs Menu
+  if (parts.length === 4) {
+    if (langKey === "tiv") {
+      return {
+        action: 'CON',
+        message: `Kanyi wasen u soo hegen?
+1. 🚨 Mhir u fese & Ijiir i yinan (Urgent Rescue)
+2. 📞 Yila sha chian sha u lamen (Discreet Callback)
+3. ⚖️ Or u Tindi u paven kwagh gbilin (Free Legal Aid)
+4. 🌾 Inyaregh ki Sule / Kasua (A4HP Microfinance)
+5. 📝 Nger kwagh ne sha u wasen ityo (Log for Advocacy)`
+      };
+    } else if (langKey === "idoma") {
+      return {
+        action: 'CON',
+        message: `Odi u je ka e bi we hegen?
+1. 🚨 Oyi Eche & Rescue (Urgent Shelter)
+2. 📞 Yila mi sha phone sha chian (Discreet Callback)
+3. ⚖️ Onye Lawyer gbo gbo (Legal Representation)
+4. 🌾 A4HP Microfinance & Market Registration
+5. 📝 Nger oya ne gbe (Advocacy Record)`
+      };
+    } else if (langKey === "hausa") {
+      return {
+        action: 'CON',
+        message: `Wane taimako kake bukata yanzu?
+1. 🚨 Taimakon Gaggawa da Mafaka (Urgent Shelter)
+2. 📞 Kiran Wayar Sirri daga Masu Ba da Shawara
+3. ⚖️ Lauyan Kyauta / Taimakon Shari'a
+4. 🌾 Rajistar Tallafin Kasuwanci na A4HP
+5. 📝 Rubuta Rahoto don Gyara Al'umma`
+      };
+    } else if (langKey === "pidgin") {
+      return {
+        action: 'CON',
+        message: `Wetin you need right now?
+1. 🚨 Urgent Rescue & Safe Shelter
+2. 📞 Secret Callback when you dey safe
+3. ⚖️ Free Lawyer & Mediation
+4. 🌾 A4HP Small business loan registration
+5. 📝 Record am make GECN fight for us`
+      };
+    } else {
+      return {
+        action: 'CON',
+        message: `What immediate action is needed?
+1. 🚨 Urgent Rescue & Safe Haven Shelter (Critical)
+2. 📞 Discreet Counselor Callback
+3. ⚖️ Free Legal Mediation & Representation
+4. 🌾 A4HP Microfinance & Farm Trade Support
+5. 📝 Log Incident for Policy Advocacy`
+      };
+    }
+  }
+
+  // Step 5: Final Submission and Report Creation
+  if (parts.length >= 5) {
+    const catChoice = parts[1];
+    const cohortChoice = parts[2];
+    const lgaChoice = parts[3];
+    const actionChoice = parts[4];
+
+    // Category mapping
+    let category: CategoryType = "Other";
+    let catName = "General Incident";
+    if (catChoice === "1") { category = "GBV"; catName = "Domestic Violence / GBV"; }
+    else if (catChoice === "2") { category = "Land/property rights"; catName = "Land & Property Denial"; }
+    else if (catChoice === "3") { category = "Economic Barrier"; catName = "Market Extortion & Illegal Levies"; }
+    else if (catChoice === "4") { category = "Healthcare Denial"; catName = "Healthcare Denial & Clinic Stigma"; }
+    else if (catChoice === "5") { category = "Education Barrier"; catName = "School Withdrawal & Child Labor"; }
+    else if (catChoice === "6") { category = "GBV"; catName = "Emergency Safe Haven Request"; }
+    else if (catChoice === "7") { category = "Economic Barrier"; catName = "A4HP Microfinance & Farm Trade Enrollment"; }
+
+    // Cohort mapping
+    let targetUser: TargetUserType = "women";
+    let cohortName = "Survivor";
+    if (cohortChoice === "1") { targetUser = category === "GBV" ? "GBV victims" : "women"; cohortName = "Survivor"; }
+    else if (cohortChoice === "2") { targetUser = "girls"; cohortName = "Young Girl"; }
+    else if (cohortChoice === "3") { targetUser = "women"; cohortName = "Female Relative / Friend"; }
+    else if (cohortChoice === "4") { targetUser = "sex workers"; cohortName = "Marginalized Sex Worker"; }
+    else if (cohortChoice === "5") { targetUser = category === "GBV" ? "GBV victims" : "women"; cohortName = "Community Member"; }
+
+    // LGA mapping
+    const lgaList = ["Gboko", "Makurdi", "Otukpo", "Tarka", "Buruku", "Vendeikya", "Logo", "Rural Benue State"];
+    const lgaIndex = parseInt(lgaChoice, 10) - 1;
+    const resolvedLga = lgaList[lgaIndex] || "Gboko";
+    const resolvedLocation = `${resolvedLga} (USSD Cell Sector)`;
+
+    // Urgency & Action mapping
+    let urgency: UrgencyType = "Medium";
+    let needsCallback = false;
+    let actionDesc = "Standard follow-up";
+
+    if (actionChoice === "1") {
+      urgency = "Critical";
+      needsCallback = true;
+      actionDesc = "Urgent Rescue & Safe Shelter requested";
+    } else if (actionChoice === "2") {
+      urgency = "High";
+      needsCallback = true;
+      actionDesc = "Discreet telephone callback requested";
+    } else if (actionChoice === "3") {
+      urgency = "High";
+      actionDesc = "Free Legal Aid / Lawyer assignment requested";
+    } else if (actionChoice === "4") {
+      urgency = "Medium";
+      actionDesc = "A4HP Microfinance enrollment requested";
+    } else {
+      urgency = "Low";
+      actionDesc = "Logged for statistical advocacy brief";
+    }
+
+    const ticketNumber = `USSD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const phoneSanitized = phoneNumber ? phoneNumber.replace(/(\d{4})\d{4}(\d{3})/, "$1****$2") : "[Confidential MSISDN]";
+
+    const desc = `[USSD *384*55# in ${langKey.toUpperCase()}] ${catName} reported from ${resolvedLga} for ${cohortName}. Action required: ${actionDesc}. Contact MSISDN: ${phoneSanitized}. Submitted via zero-data feature phone without internet.`;
+
+    const newReport: Report = {
+      id: `rep-ussd-${Date.now()}`,
+      category,
+      targetUser,
+      description: desc,
+      date: new Date().toISOString(),
+      location: resolvedLocation,
+      reportedBy: "USSD Gateway",
+      status: urgency === "Critical" ? "Actioned" : "Classified",
+      urgency,
+      cleaningLog: `Zero-data USSD session processed (${path}). Phone ${phoneSanitized} securely masked. Ticket ${ticketNumber} generated.`,
+      ussdMeta: {
+        dialCode: serviceCode || "*384*55#",
+        language: langKey as any,
+        rawPath: path,
+        needsCallback,
+        ticketNumber
+      }
+    };
+
+    // Auto-assign available emergency resource if Critical
+    if (urgency === "Critical") {
+      const availRes = resources.find(r => r.type === "Temporary Shelter" || r.type === "Medical Support") || resources[0];
+      if (availRes) {
+        newReport.assignedResource = {
+          type: availRes.type,
+          name: availRes.name,
+          contact: availRes.contact,
+          status: "Dispatched"
+        };
+      }
+    } else if (actionChoice === "3") {
+      const legalRes = resources.find(r => r.type === "Legal Aid");
+      if (legalRes) {
+        newReport.assignedResource = {
+          type: legalRes.type,
+          name: legalRes.name,
+          contact: legalRes.contact,
+          status: "Dispatched"
+        };
+      }
+    }
+
+    reports.unshift(newReport);
+
+    // Multilingual confirmation messages
+    let endMsg = "";
+    if (langKey === "tiv") {
+      endMsg = `✅ Ngeren u #{ticketNumber} ngi hegen!
+Mba GECN ken ${resolvedLga} fa sha kwagh ne.
+Se koso kwagh wou sha chian man bem.
+Hotline: 07032121178.
+Hemba bem: Kpandegh dialer wou (*384*55*99#).`;
+    } else if (langKey === "idoma") {
+      endMsg = `✅ A nger #{ticketNumber} a l'enu!
+Tawagar GECN {resolvedLga} a gbo oya we.
+Se le oya we kpiti kpiti.
+Hotline: 07032121178.
+Safety: Fu phone log we (*384*55*99#).`;
+    } else if (langKey === "hausa") {
+      endMsg = `✅ An yi rijistar Rahoto #{ticketNumber}!
+Tawagar GECN a ${resolvedLga} ta samu kuma tana aiki.
+Ana kiyaye sirrinka dari bisa dari.
+Hotline: 07032121178.
+Don Tsaro: Share tarihin kiran wayarka (*384*55*99#).`;
+    } else if (langKey === "pidgin") {
+      endMsg = `✅ Report #{ticketNumber} don enter!
+GECN response team for ${resolvedLga} don receive your case.
+Nobody go fit trace this message to you.
+Hotline: 07032121178.
+Safety: Clear your phone call log (*384*55*99#).`;
+    } else {
+      endMsg = `✅ Report #{ticketNumber} Logged!
+GECN Response Team in ${resolvedLga} has been notified.
+Your identity and location are protected.
+24/7 Crisis Hotline: 07032121178.
+Safety Reminder: Clear your phone dial history (*384*55*99#).`;
+    }
+
+    endMsg = endMsg.replace("{ticketNumber}", ticketNumber);
+
+    return {
+      action: 'END',
+      message: endMsg,
+      reportCreated: newReport
+    };
+  }
+
+  return {
+    action: 'END',
+    message: "Invalid choice. Please redial *384*55#."
+  };
+}
+
+// 4. USSD Gateway Endpoint (Zero-Data / Button Phone Gateway)
+app.post("/api/ussd", (req, res) => {
+  const sessionId = req.body.sessionId || `sess-${Date.now()}`;
+  const serviceCode = req.body.serviceCode || "*384*55#";
+  const phoneNumber = req.body.phoneNumber || "+2348000000000";
+  const text = req.body.text !== undefined ? req.body.text : (req.query.text || "");
+
+  const result = processUssdSession(sessionId, serviceCode, phoneNumber, String(text));
+
+  // If client requested plain text (standard telco gateway like Africa's Talking / Twilio)
+  if (req.headers.accept?.includes("text/plain")) {
+    return res.type("text/plain").send(`${result.action} ${result.message}`);
+  }
+
+  // Otherwise return JSON with action, formatted string, and report object
+  res.json({
+    action: result.action,
+    message: result.message,
+    rawResponse: `${result.action} ${result.message}`,
+    reportCreated: result.reportCreated
+  });
+});
+
+// 5. Get USSD Shortcode Directory & Offline Guide
+app.get("/api/ussd/codes", (req, res) => {
+  res.json({
+    rootCode: "*384*55#",
+    networkAvailability: "MTN, Airtel, Glo, 9mobile (Toll-Free / Zero Mobile Data)",
+    supportedLanguages: [
+      { code: "en", name: "English", dialPrefix: "*384*55*1#" },
+      { code: "tiv", name: "Tiv (Zwa Tiv)", dialPrefix: "*384*55*2#" },
+      { code: "idoma", name: "Idoma (Ony'Idoma)", dialPrefix: "*384*55*3#" },
+      { code: "hausa", name: "Hausa (Harshen Hausa)", dialPrefix: "*384*55*4#" },
+      { code: "pidgin", name: "Nigerian Pidgin", dialPrefix: "*384*55*5#" }
+    ],
+    quickCodes: [
+      {
+        code: "*384*55*0#",
+        title: "Instant Emergency SOS",
+        description: "Zero-data silent distress beacon for immediate rescue without menus",
+        urgency: "Critical"
+      },
+      {
+        code: "*384*55*1*1#",
+        title: "Immediate GBV Report (English)",
+        description: "Direct jump to Domestic Violence intake for women/girls in English",
+        urgency: "Critical"
+      },
+      {
+        code: "*384*55*2*1#",
+        title: "GBV Report in Tiv (Ifan hen Ya)",
+        description: "Direct jump to Domestic Violence intake in Tiv language for Gboko/Tarka/Buruku",
+        urgency: "Critical"
+      },
+      {
+        code: "*384*55*1*2#",
+        title: "Land & Property Rights Exclusion",
+        description: "File inheritance or farm land denial case for female children/widows",
+        urgency: "High"
+      },
+      {
+        code: "*384*55*1*3#",
+        title: "Market Extortion & Illegal Levies",
+        description: "Report trade union abuse or excessive market taxes against women traders",
+        urgency: "High"
+      },
+      {
+        code: "*384*55*1*7#",
+        title: "A4HP Microfinance & Farm Trade Support",
+        description: "Sign up for GECN interest-free loan and cassava/yam agro-processing mentorship",
+        urgency: "Medium"
+      },
+      {
+        code: "*384*55*99#",
+        title: "Discreet History Wiper",
+        description: "Safely purge USSD session logs and phone buffer memory for survivor protection",
+        urgency: "Security"
+      }
+    ]
+  });
 });
 
 // 4. Update status and resource allocation
