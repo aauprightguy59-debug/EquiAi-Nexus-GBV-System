@@ -30,11 +30,7 @@ import {
   AIConnectionStatus
 } from "../services/aiMentor";
 
-interface BusinessAssistantProps {
-  decoyMode?: boolean;
-}
-
-export const BusinessAssistant: React.FC<BusinessAssistantProps> = ({ decoyMode = false }) => {
+export const BusinessAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
@@ -221,7 +217,7 @@ ${messages
         {
           id: "welcome-reset",
           sender: "assistant",
-          text: "Chat cleared! How can I assist your business or agricultural enterprise in Gboko today?",
+          text: "Chat cleared! How can I assist your business enterprise in Gboko today?",
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         }
       ]);
@@ -237,7 +233,7 @@ ${messages
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="text-base font-bold font-display text-slate-900 flex items-center gap-2">
               <Briefcase className="w-4 h-4 text-indigo-600" />
-              {decoyMode ? "🌾 Agritech Mentoring Hub" : "🤝 AI for Her Power"}
+              🤝 AI for Her Power
             </h3>
             <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[10px] font-bold rounded-full border border-indigo-200">
               Live AI
@@ -245,9 +241,7 @@ ${messages
           </div>
 
           <p className="text-xs text-slate-600 leading-relaxed">
-            {decoyMode
-              ? "Get customized tips on cassava processing machines, soil enrichment, and grain rotations."
-              : "Economic independence is the strongest shield against systemic domestic abuse or land exclusion. Chat securely with our Digital Mentor to outline small-scale microcredit businesses in Gboko."}
+            Economic independence is the strongest shield against systemic domestic abuse or land exclusion. Chat securely with our Digital Mentor to outline small-scale microcredit businesses in Gboko.
           </p>
 
           {/* Quick Start Prompt Pills */}

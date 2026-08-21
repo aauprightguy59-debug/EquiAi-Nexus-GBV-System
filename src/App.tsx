@@ -130,8 +130,7 @@ export default function App() {
   const [filterChannel, setFilterChannel] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Safety & Decoy States
-  const [decoyMode, setDecoyMode] = useState(false);
+  // Safety Panic State
   const [quickExitLoading, setQuickExitLoading] = useState(false);
 
   // Form States (HerData Commons)
@@ -434,39 +433,23 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-white border-b border-purple-100 shadow-xs px-4 py-3">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className={`p-2.5 ${decoyMode ? "bg-emerald-700 text-white" : "bg-gecn-purple text-gecn-gold border-2 border-gecn-magenta animate-pulse"} rounded-lg shadow-sm flex items-center justify-center shrink-0`}>
+            <div className="p-2.5 bg-gecn-purple text-gecn-gold border-2 border-gecn-magenta animate-pulse rounded-lg shadow-sm flex items-center justify-center shrink-0">
               <Scale className="w-6 h-6" id="header-logo-icon" />
             </div>
             <div>
               <h1 className="text-xl font-bold font-display tracking-tight text-slate-900 flex flex-wrap items-center gap-2">
-                {decoyMode ? "🌾 Gboko Agritech Hub" : <span className="text-gecn-purple">EquiAI Nexus</span>}
+                <span className="text-gecn-purple">EquiAI Nexus</span>
                 <span className="text-xs px-2.5 py-0.5 bg-gecn-purple text-gecn-gold border border-gecn-magenta rounded font-medium font-sans shadow-xs">
-                  {decoyMode ? "Production Mode" : "GECN Initiative"}
+                  GECN Initiative
                 </span>
               </h1>
               <p className="text-xs text-slate-600">
-                {decoyMode 
-                  ? "Real-time crop pricing, market union directories, and agricultural surveys."
-                  : "An initiative of Gender Equality Club Nigeria (GECN) for Gender Justice & GBV Response."}
+                An initiative of Gender Equality Club Nigeria (GECN) for Gender Justice & GBV Response.
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Decoy Toggle */}
-            <button
-              onClick={() => setDecoyMode(!decoyMode)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
-                decoyMode
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                  : "bg-purple-50 text-gecn-purple border-purple-200 hover:bg-purple-100"
-              }`}
-              title="Clicking this immediately alters visual headers/forms to camouflage the app to others."
-            >
-              {decoyMode ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5 mr-0.5" />}
-              {decoyMode ? "Deactivate Camouflage" : "Safe Camouflage"}
-            </button>
-
             {/* Quick Exit Panic Button */}
             <button
               onClick={handleQuickExit}
@@ -482,14 +465,12 @@ export default function App() {
       </header>
 
       {/* SUB-HEADER CAUTION BAR */}
-      {!decoyMode && (
-        <div className="bg-purple-50 border-b border-purple-100 py-1.5 px-4 text-center">
-          <p className="text-xs text-purple-950 flex items-center justify-center gap-1.5">
-            <Info className="w-3.5 h-3.5 text-gecn-magenta shrink-0" />
-            <span><strong>Safety warning:</strong> If you suspect someone is viewing public reports or your screen, click <strong>Safe Camouflage</strong> or the crimson <strong>QUICK EXIT</strong> button instantly. About EquiAI Nexus: An initiative of Gender Equality Club Nigeria (GECN).</span>
-          </p>
-        </div>
-      )}
+      <div className="bg-purple-50 border-b border-purple-100 py-1.5 px-4 text-center">
+        <p className="text-xs text-purple-950 flex items-center justify-center gap-1.5">
+          <Info className="w-3.5 h-3.5 text-gecn-magenta shrink-0" />
+          <span><strong>Safety warning:</strong> If you suspect someone is viewing your screen, click the crimson <strong>QUICK EXIT</strong> button instantly to leave. About EquiAI Nexus: An initiative of Gender Equality Club Nigeria (GECN).</span>
+        </p>
+      </div>
 
       {/* CORE NAVIGATION */}
       <nav className="bg-gecn-purple text-white py-1.5 shadow-md">
@@ -502,7 +483,7 @@ export default function App() {
                 : "border-transparent text-purple-200 hover:text-white"
             }`}
           >
-            {decoyMode ? "📊 Agritech Metrics" : "📊 Response Dashboard"}
+            📊 Response Dashboard
           </button>
           <button
             onClick={() => setActiveTab("reporting")}
@@ -512,7 +493,7 @@ export default function App() {
                 : "border-transparent text-purple-200 hover:text-white"
             }`}
           >
-            {decoyMode ? "📥 Input Yield Data" : "📥 Intake & Incident Reporter"}
+            📥 Intake & Incident Reporter
           </button>
           <button
             onClick={() => setActiveTab("ussd")}
@@ -523,7 +504,7 @@ export default function App() {
             }`}
           >
             <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-            {decoyMode ? "📱 2G Farm Code" : "📱 USSD Gateway (*384*55#)"}
+            📱 USSD Gateway (*384*55#)
           </button>
           <button
             onClick={() => setActiveTab("insights")}
@@ -533,7 +514,7 @@ export default function App() {
                 : "border-transparent text-purple-200 hover:text-white"
             }`}
           >
-            {decoyMode ? "📈 Crop Trends" : "📈 Policy & Analytical Insights"}
+            📈 Policy & Analytical Insights
           </button>
           <button
             onClick={() => setActiveTab("mentor")}
@@ -543,7 +524,7 @@ export default function App() {
                 : "border-transparent text-purple-200 hover:text-white"
             }`}
           >
-            {decoyMode ? "🌾 Agri Mentor" : "🤝 GECN Business Assistant"}
+            🤝 A4HP Digital Business Assistant
           </button>
           <button
             onClick={() => setActiveTab("admin")}
@@ -553,7 +534,7 @@ export default function App() {
                 : "border-transparent text-purple-200 hover:text-white"
             }`}
           >
-            {decoyMode ? "🔐 Coop Portal" : "🔐 Responder Administration"}
+            🔐 Responder Administration
           </button>
         </div>
       </nav>
@@ -585,17 +566,13 @@ export default function App() {
                   <div className="max-w-2xl">
                     <span className="text-xs font-bold px-2.5 py-1 bg-gecn-gold/10 text-gecn-gold rounded-full border border-gecn-gold/30 flex items-center gap-1.5 w-fit">
                       <Scale className="w-3.5 h-3.5 animate-pulse" />
-                      {decoyMode ? "CASSAVA & GRAIN RESOURCE NETWORK" : "EQUIAI NEXUS - GBV DECISION ENGAGEMENT & JUSTICE WORKSPACE"}
+                      EQUIAI NEXUS - GBV DECISION ENGAGEMENT & JUSTICE WORKSPACE
                     </span>
                     <h2 className="text-2xl font-bold font-display mt-3 leading-tight">
-                      {decoyMode 
-                        ? "Connecting farmers and monitoring local agricultural market barriers in Benue."
-                        : "Real-time incident reporting, automated legal advocacy, safety placement, and trauma counseling."}
+                      Real-time incident reporting, automated legal advocacy, safety placement, and trauma counseling.
                     </h2>
                     <p className="text-sm text-purple-100 mt-2">
-                      {decoyMode
-                        ? "Submitting daily agricultural prices and cooperative yields in local market segments helps smallholders claim proper pay."
-                        : "EquiAI Nexus is an initiative of the Gender Equality Club Nigeria (GECN). We analyze incidents in real-time to deploy life-saving legal, welfare, and medical resources across Gboko and Benue State."}
+                      EquiAI Nexus is an initiative of the Gender Equality Club Nigeria (GECN). We analyze incidents in real-time to deploy life-saving legal, welfare, and medical resources across Gboko and Benue State.
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button
@@ -603,23 +580,21 @@ export default function App() {
                         className="px-4 py-2 bg-gecn-magenta hover:bg-[#cc0078] text-white rounded-lg text-xs font-bold shadow-md flex items-center gap-1.5 transition-all transform hover:scale-105"
                       >
                         <PlusCircle className="w-4 h-4" />
-                        {decoyMode ? "Submit Farm Yield Info" : "File Secure Incident Report"}
+                        File Secure Incident Report
                       </button>
                       <button
                         onClick={() => setActiveTab("ussd")}
                         className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-md flex items-center gap-1.5 transition-all"
                       >
                         <Radio className="w-4 h-4 text-emerald-200 animate-pulse" />
-                        {decoyMode ? "📱 2G USSD *384*55#" : "📱 Dial *384*55# USSD (Zero Data)"}
+                        📱 Dial *384*55# USSD (Zero Data)
                       </button>
                       <button
-                        onClick={() => {
-                          setDecoyMode(true);
-                          setActiveTab("reporting");
-                        }}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold"
+                        onClick={() => setActiveTab("mentor")}
+                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5"
                       >
-                        {decoyMode ? "How to use" : "Open in Safety Discreet Mode"}
+                        <Sparkles className="w-3.5 h-3.5 text-gecn-gold" />
+                        A4HP Business Assistant
                       </button>
                     </div>
                   </div>
@@ -654,7 +629,7 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs hover:shadow-sm transition-all">
                     <p className="text-xs text-slate-500 font-bold tracking-wider uppercase">
-                      {decoyMode ? "Surveys Registered" : "Total Cases Tracked"}
+                      Total Cases Tracked
                     </p>
                     <div className="flex items-baseline justify-between mt-2">
                       <span className="text-3xl font-extrabold text-slate-900">12</span>
@@ -667,7 +642,7 @@ export default function App() {
 
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs hover:shadow-sm transition-all">
                     <p className="text-xs text-slate-500 font-bold tracking-wider uppercase">
-                      {decoyMode ? "Active Safe Zones" : "Support Dispatched"}
+                      Support Dispatched
                     </p>
                     <div className="flex items-baseline justify-between mt-2">
                       <span className="text-3xl font-extrabold text-gecn-purple">4</span>
@@ -680,7 +655,7 @@ export default function App() {
 
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs hover:shadow-sm transition-all">
                     <p className="text-xs text-slate-500 font-bold tracking-wider uppercase">
-                      {decoyMode ? "Farming Envoys" : "Active Resources"}
+                      Active Resources
                     </p>
                     <div className="flex items-baseline justify-between mt-2">
                       <span className="text-3xl font-extrabold text-slate-900">5</span>
@@ -693,7 +668,7 @@ export default function App() {
 
                   <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs hover:shadow-sm transition-all">
                     <p className="text-xs text-slate-500 font-bold tracking-wider uppercase">
-                      {decoyMode ? "Market Cooperatives" : "A4HP Mentored Women"}
+                      A4HP Mentored Women
                     </p>
                     <div className="flex items-baseline justify-between mt-2">
                       <span className="text-3xl font-extrabold text-gecn-magenta">4,000+</span>
@@ -713,12 +688,10 @@ export default function App() {
                         <div>
                           <h3 className="text-base font-bold font-display text-slate-900 flex items-center gap-2">
                             <Activity className="w-5 h-5 text-gecn-magenta animate-pulse" />
-                            {decoyMode ? "Feed - Crop Submissions & Alerts" : "Real-time Incident Response Dashboard"}
+                            Real-time Incident Response Dashboard
                           </h3>
                           <p className="text-xs text-slate-500">
-                            {decoyMode 
-                              ? "Live cooperative records feed with automated grade and urgency analysis."
-                              : "Live incoming stream of reports and response assignments (Anonymized)."}
+                            Live incoming stream of reports and response assignments (Anonymized).
                           </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -740,7 +713,7 @@ export default function App() {
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                             <Search className="w-3.5 h-3.5 text-gecn-purple" />
-                            {decoyMode ? "Agricultural Search & Filters" : "Filter Incident Database"}
+                            Filter Incident Database
                           </span>
                           {(filterCategory !== "all" || filterLga !== "all" || filterLocation !== "all" || filterStatus !== "all" || searchQuery !== "") && (
                             <button
@@ -763,7 +736,7 @@ export default function App() {
                           <div>
                             <input
                               type="text"
-                              placeholder={decoyMode ? "Search crop yield..." : "Search keywords..."}
+                              placeholder="Search keywords..."
                               value={searchQuery}
                               onChange={(e) => setSearchQuery(e.target.value)}
                               className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs placeholder-slate-400 focus:outline-none focus:border-gecn-purple focus:ring-1 focus:ring-gecn-purple"
@@ -777,7 +750,7 @@ export default function App() {
                               onChange={(e) => setFilterCategory(e.target.value)}
                               className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none focus:border-gecn-purple"
                             >
-                              <option value="all">{decoyMode ? "All Crops" : "All Categories"}</option>
+                              <option value="all">All Categories</option>
                               <option value="GBV">GBV (Domestic/Violence)</option>
                               <option value="Economic Barrier">Economic Barrier</option>
                               <option value="Healthcare Denial">Healthcare Denial</option>
@@ -838,7 +811,7 @@ export default function App() {
                               onChange={(e) => setFilterStatus(e.target.value)}
                               className="w-full p-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none focus:border-gecn-purple"
                             >
-                              <option value="all">{decoyMode ? "All Grades" : "All Statuses"}</option>
+                              <option value="all">All Statuses</option>
                               <option value="Pending">Pending</option>
                               <option value="Classified">Classified</option>
                               <option value="Actioned">Actioned</option>
@@ -899,20 +872,16 @@ export default function App() {
                                       rep.urgency === "High" ? "bg-orange-100 text-orange-950 border border-orange-200" :
                                       rep.urgency === "Medium" ? "bg-yellow-100 text-yellow-850 border border-yellow-250" : "bg-blue-100 text-blue-850 border border-blue-200"
                                     }`}>
-                                      {decoyMode 
-                                        ? (rep.urgency === "Critical" ? "Soil Alert" : "Quality Grade")
-                                        : rep.urgency} Urgency
+                                      {rep.urgency} Urgency
                                     </span>
                                     <span className="text-xs text-slate-400">{time}</span>
                                   </div>
                                 </div>
 
                                 <p className="text-xs font-bold text-slate-800 flex flex-wrap items-center gap-1.5">
-                                  <span>{decoyMode ? "Crop Strain / Group Affected:" : "Category / Group Affected:"}</span>
+                                  <span>Category / Group Affected:</span>
                                   <span className="px-2 py-1 bg-purple-50 text-gecn-purple border border-purple-100 rounded text-[10px] font-bold">
-                                    {decoyMode 
-                                      ? (rep.category === "GBV" ? "Cassava Strike" : rep.category)
-                                      : rep.category}
+                                    {rep.category}
                                   </span>
                                   <span className="text-slate-400 font-normal">&bull;</span>
                                   <span className="text-slate-600 font-semibold">
@@ -956,10 +925,10 @@ export default function App() {
                         </div>
                         <div>
                           <h3 className="text-base font-bold font-display text-slate-900">
-                            {decoyMode ? "🌾 Gboko Agro-Security Gateway" : "🔒 Incident Response Database (Restricted access)"}
+                            🔒 Incident Response Database (Restricted access)
                           </h3>
                           <p className="text-xs text-slate-500">
-                            {decoyMode ? "Secure ledger directories for agricultural cooperatives in Benue state." : "Anonymized stream and interactive casework analysis database is restricted."}
+                            Anonymized stream and interactive casework analysis database is restricted.
                           </p>
                         </div>
                       </div>
@@ -979,7 +948,7 @@ export default function App() {
                           <div>
                             <h4 className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
                               <PlusCircle className="w-4 h-4 text-gecn-purple" />
-                              {decoyMode ? "Cooperative Yield Upload" : "Secure Public Intake Form"}
+                              Secure Public Intake Form
                             </h4>
                             <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                               Are you a survivor or a GECN volunteer advocate? File a secure, anonymized report about GBV incidents, land exclusion, or agricultural barriers.
@@ -998,7 +967,7 @@ export default function App() {
                           <div>
                             <h4 className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
                               <Sparkles className="w-4 h-4 text-gecn-gold" />
-                              {decoyMode ? "A4HP Agritech Advisory" : "AI Business Mentorship"}
+                              AI Business Mentorship
                             </h4>
                             <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
                               Unlock financial empowerment. Consult secure A4HP Digital Assistant to map out small-scale trade and sustainable farming loops.
@@ -1060,24 +1029,9 @@ export default function App() {
 
                     <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-4">
                       <h3 className="text-base font-bold font-display text-slate-900 border-b border-slate-100 pb-2">
-                        {decoyMode ? "🌾 Gboko Market Directories" : "🚨 Rapid Support Contacts"}
+                        🚨 Rapid Support Contacts
                       </h3>
                     
-                    {decoyMode ? (
-                      <div className="flex flex-col gap-3 text-xs text-slate-600">
-                        <p>Access the official list of authorized Gboko crop associations offering fair purchase pools:</p>
-                        <div className="space-y-2">
-                          <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
-                            <p className="font-semibold text-slate-800">GECN Agritech Depot</p>
-                            <p className="text-[11px] text-slate-500">No 62 Ahmadu Bello Way, Gboko</p>
-                          </div>
-                          <div className="p-2.5 bg-slate-50 rounded border border-slate-200">
-                            <p className="font-semibold text-slate-800">Gboko Main Market Union Wing</p>
-                            <p className="text-[11px] text-slate-500">Market Road, Central Gboko</p>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
                       <div className="flex flex-col gap-4">
                         <p className="text-xs text-slate-600 leading-relaxed">
                           Safe referral sources available across physical Gboko coordinates for women, girls, boys, and marginalized sex workers:
@@ -1109,15 +1063,14 @@ export default function App() {
                             GECN Crisis Line
                           </p>
                           <p className="mt-1 font-mono text-[11px]">Hotline: +234 (0) 703 212 1178</p>
-                          <p className="text-[10px] text-amber-700 mt-0.5">Discreet SMS, WhastApp & Secure Callback available 24/7.</p>
+                          <p className="text-[10px] text-amber-700 mt-0.5">Discreet SMS, WhatsApp & Secure Callback available 24/7.</p>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
+              </motion.div>
+            )}
 
           {/* TAB 2: HERDATA COMMONS REPORTING */}
             {activeTab === "reporting" && (
@@ -1131,12 +1084,10 @@ export default function App() {
                 {/* Reporting Instructions */}
                 <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-4">
                   <h3 className="text-base font-bold font-display text-slate-900 border-b border-slate-100 pb-2">
-                    {decoyMode ? "🌾 Cassava Crop Intake System" : "🛡️ HerData Commons AI"}
+                    🛡️ HerData Commons AI
                   </h3>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    {decoyMode
-                      ? "Submit soil observations and harvest data. Rest assured, agricultural surveys are stored securely with randomized peer markers."
-                      : "HerData Commons is a highly secure platform developed to let survivors and local advocates safely document violence, extortion, or systemic exclusion."}
+                    HerData Commons is a highly secure platform developed to let survivors and local advocates safely document violence, extortion, or systemic exclusion.
                   </p>
 
                   <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-900">
@@ -1169,7 +1120,7 @@ export default function App() {
                   <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                     <div>
                       <h3 className="text-base font-bold font-display text-slate-900">
-                        {decoyMode ? "Agritech Survey Input" : "Secure Intake Form"}
+                        Secure Intake Form
                       </h3>
                       <p className="text-xs text-slate-500">Choose custom Web input or simulate SMS copy-paste gateway</p>
                     </div>
@@ -1225,7 +1176,7 @@ export default function App() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">
-                              {decoyMode ? "Agricultural Category / Crop Type" : "Reporting Category *"}
+                              Reporting Category *
                             </label>
                             <select
                               value={category}
@@ -1243,7 +1194,7 @@ export default function App() {
 
                           <div>
                             <label className="block text-xs font-bold text-slate-700 mb-1">
-                              {decoyMode ? "Soil Target Segment / Farm Type" : "Vulnerable Cohort / Group Affected *"}
+                              Vulnerable Cohort / Group Affected *
                             </label>
                             <select
                               value={targetUser}
@@ -1310,17 +1261,13 @@ export default function App() {
 
                         <div>
                           <label className="block text-xs font-bold text-slate-700 mb-1">
-                            {decoyMode 
-                              ? "Yield Logs & Harvesting observations (Max 1000 symbols)" 
-                              : "Incident Description (What happened?) *"}
+                            Incident Description (What happened?) *
                           </label>
                           <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             required
-                            placeholder={decoyMode
-                              ? "Input specific crop grades, pricing challenges, and union observations."
-                              : "Please explain the situation. For absolute security, omit direct names and coordinates here as well (our AI scans the incoming data to redact anyway)."}
+                            placeholder="Please explain the situation. For absolute security, omit direct names and coordinates here as well (our AI scans the incoming data to redact anyway)."
                             rows={4}
                             className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-sans leading-relaxed"
                           />
@@ -1420,7 +1367,7 @@ export default function App() {
                         ) : (
                           <>
                             <Sparkles className="w-4 h-4" />
-                            {decoyMode ? "Submit Agritech Survey" : "Submit & Auto-Redact Incident"}
+                            Submit & Auto-Redact Incident
                           </>
                         )}
                       </button>
@@ -1459,7 +1406,7 @@ export default function App() {
                   {/* Category Breakdown bar chart */}
                   <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-3">
                     <h3 className="text-base font-bold font-display text-slate-900 border-b border-slate-100 pb-2">
-                      {decoyMode ? "Crop Distribution Shares" : "Incident Distribution by Major Category"}
+                      Incident Distribution by Major Category
                     </h3>
                     <div className="h-64 w-full">
                       <ResponsiveContainer width="100%" height="100%">
@@ -1479,7 +1426,7 @@ export default function App() {
                       {Object.keys(categoryColors).map(key => (
                         <span key={key} className="flex items-center gap-1.5">
                           <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: categoryColors[key] }} />
-                          {decoyMode && key === "GBV" ? "Cassava Strike" : key}
+                          {key}
                         </span>
                       ))}
                     </div>
@@ -1488,7 +1435,7 @@ export default function App() {
                   {/* Urgency breakdown & Demographic segment share */}
                   <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-3">
                     <h3 className="text-base font-bold font-display text-slate-900 border-b border-slate-100 pb-2">
-                      {decoyMode ? "Tillage Urgency Levels" : "Categorized Urgency & Impact Triage"}
+                      Categorized Urgency & Impact Triage
                     </h3>
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
@@ -1535,7 +1482,7 @@ export default function App() {
                 {/* Demographics bar chart */}
                 <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-3">
                   <h3 className="text-base font-bold font-display text-slate-900 border-b border-slate-100 pb-2">
-                    {decoyMode ? "Surveyed Demographic Segmentations" : "Demographic Support Enrolment"}
+                    Demographic Support Enrolment
                   </h3>
                   <div className="h-64 w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -1560,7 +1507,7 @@ export default function App() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                     <div>
                       <h3 className="text-base font-bold font-display text-slate-900">
-                        {decoyMode ? "Cooperative Pricing Advocacy Planner" : "✊ Gemini Bulk Advocacy Synthesis"}
+                        ✊ Gemini Bulk Advocacy Synthesis
                       </h3>
                       <p className="text-xs text-slate-500">Analyze current community caseload to generate evidence-based policy briefs for local authorities</p>
                     </div>
@@ -1640,7 +1587,7 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
               >
-                <BusinessAssistant decoyMode={decoyMode} />
+                <BusinessAssistant />
               </motion.div>
             )}
 
@@ -1660,7 +1607,7 @@ export default function App() {
                       <ShieldCheck className="w-6 h-6" />
                     </div>
                     <h3 className="text-xl font-bold font-display text-slate-900">
-                      {decoyMode ? "Cooperative Admin Login" : "Responder Authorization Access"}
+                      Responder Authorization Access
                     </h3>
                     <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                       This area contains active casework and coordinator rosters. Access restricted to authorized Gender Equality Club Nigeria counselors.
