@@ -52,6 +52,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { Report, ResourceAllocation, CategoryType, TargetUserType, Message } from "./types";
 import { UssdSimulator } from "./components/UssdSimulator";
 import { GecnLogo } from "./components/GecnLogo";
+import { BusinessAssistant } from "./components/BusinessAssistant";
+import { INITIAL_REPORTS, INITIAL_RESOURCES } from "./data/initialData";
 
 // Pilot LGAs in Benue State and their associated wards/areas
 const pilotLGAs: { [key: string]: string[] } = {
@@ -161,19 +163,6 @@ export default function App() {
   const [bulkAnalysis, setBulkAnalysis] = useState("");
   const [analyzingBulk, setAnalyzingBulk] = useState(false);
 
-  // A4HP Business Assistant Chat States
-  const [chatMessages, setChatMessages] = useState<Message[]>([
-    {
-      id: "welcome",
-      sender: "assistant",
-      text: "Alo (Greetings)! I am your AI for Her Power (A4HP) Business Assistant. I am here to provide you with secure digital mentorship, tailored for Gboko and the Benue State agricultural context. Ask me about starting a small trade, processing cassava/yams, setting up savings circles (Esusu), or budgeting!",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }
-  ]);
-  const [inputMessage, setInputMessage] = useState("");
-  const [sendingMessage, setSendingMessage] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
-
   // Admin Portal States
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [adminPassword, setAdminPassword] = useState("");
@@ -192,14 +181,32 @@ export default function App() {
     try {
       setRefreshing(true);
       const repRes = await fetch("/api/reports");
-      const reportsData = await repRes.json();
-      setReports(reportsData);
+      if (repRes.ok) {
+        const reportsData = await repRes.json();
+        if (Array.isArray(reportsData) && reportsData.length > 0) {
+          setReports(reportsData);
+        } else {
+          setReports(INITIAL_REPORTS);
+        }
+      } else {
+        setReports(INITIAL_REPORTS);
+      }
 
       const resRes = await fetch("/api/resources");
-      const resourcesData = await resRes.json();
-      setResources(resourcesData);
+      if (resRes.ok) {
+        const resourcesData = await resRes.json();
+        if (Array.isArray(resourcesData) && resourcesData.length > 0) {
+          setResources(resourcesData);
+        } else {
+          setResources(INITIAL_RESOURCES);
+        }
+      } else {
+        setResources(INITIAL_RESOURCES);
+      }
     } catch (e) {
-      console.error("Failed fetching database", e);
+      console.warn("Server database unreachable (running in static / GitHub Pages mode). Initializing local records.", e);
+      setReports(INITIAL_REPORTS);
+      setResources(INITIAL_RESOURCES);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -209,11 +216,6 @@ export default function App() {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // Scroll to bottom of chat
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatMessages]);
 
   // Quick Exit Option
   const handleQuickExit = () => {
@@ -305,43 +307,6 @@ export default function App() {
       console.error("Analysis failed", err);
     } finally {
       setAnalyzingBulk(false);
-    }
-  };
-
-  // AI Mentor chat
-  const handleSendMessage = async (customMessage?: string) => {
-    const textToSend = customMessage || inputMessage;
-    if (!textToSend.trim() || sendingMessage) return;
-
-    const userMsg: Message = {
-      id: `msg-${Date.now()}`,
-      sender: "user",
-      text: textToSend,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-
-    setChatMessages(prev => [...prev, userMsg]);
-    if (!customMessage) setInputMessage("");
-    setSendingMessage(true);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [...chatMessages, userMsg] })
-      });
-      const data = await response.json();
-      const assistMsg: Message = {
-        id: `msg-${Date.now()}-assistant`,
-        sender: "assistant",
-        text: data.text,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setChatMessages(prev => [...prev, assistMsg]);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setSendingMessage(false);
     }
   };
 
@@ -1674,115 +1639,8 @@ export default function App() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="grid grid-cols-1 lg:grid-cols-4 gap-6"
               >
-                {/* Left panel - pre-set guides & resources */}
-                <div className="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-4">
-                  <h3 className="text-base font-bold font-display text-slate-900 border-b border-slate-100 pb-2">
-                    {decoyMode ? "🌾 Agritech Mentoring Hub" : "🤝 AI for Her Power"}
-                  </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {decoyMode
-                      ? "Get customized tips on cassava processing machines, soil enrichment, and grain rotations."
-                      : "Economic independence is the strongest shield against systemic domestic abuse or land exclusion. Chat securely with our Digital Mentor to outline small-scale microcredit businesses in Gboko."}
-                  </p>
-
-                  <div className="space-y-4 pt-2">
-                    <h4 className="text-xs font-bold text-slate-700">Quick Start Mentorship Topics:</h4>
-                    <div className="flex flex-col gap-2 text-xs">
-                      {[
-                        "How do I start a Garri processing business in Gboko?",
-                        "Explain how a local ESUSU savings loop works.",
-                        "Step-by-step budget for a mini-tailoring workshop.",
-                        "What agricultural crops yield best in Mkar/Yandev?"
-                      ].map((prompt, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleSendMessage(prompt)}
-                          disabled={sendingMessage}
-                          className="p-2.5 bg-slate-50 hover:bg-indigo-50 text-slate-700 border border-slate-200 rounded-lg text-left text-[11px] leading-snug font-medium transition-all"
-                        >
-                          {prompt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-emerald-50 rounded-lg text-[11px] text-emerald-950 mt-auto">
-                    <p className="font-bold flex items-center gap-1">
-                      <Briefcase className="w-3.5 h-3.5 text-emerald-700" />
-                      GECN Microfinance Pool
-                    </p>
-                    <p className="mt-1">
-                      Mentored women and survivors are eligible for interest-free microfinance loans up to ₦100,000 for local Gboko trading. Speak to a GECN representative via Admin.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right panel - Interactive chat */}
-                <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 p-4 flex flex-col h-[550px]">
-                  <div className="p-3 bg-slate-900 text-white rounded-xl flex items-center justify-between mb-4 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping" />
-                      <div>
-                        <p className="text-xs font-bold">A4HP Digital Business Mentor</p>
-                        <p className="text-[10px] text-emerald-300">Active server thread &bull; Secure Encrypted Chat</p>
-                      </div>
-                    </div>
-                    <Sparkles className="w-5 h-5 text-indigo-400" />
-                  </div>
-
-                  {/* Chat message flow container */}
-                  <div className="grow overflow-y-auto flex flex-col gap-3 p-2 mb-4 scrollbar-thin">
-                    {chatMessages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={`flex flex-col max-w-[85%] ${
-                          msg.sender === "user" ? "ml-auto items-end" : "mr-auto items-start"
-                        }`}
-                      >
-                        <span className="text-[9px] text-slate-400 mb-0.5 px-1">{msg.sender === "user" ? "You" : "Mentor"} &bull; {msg.timestamp}</span>
-                        <div className={`p-3 rounded-2xl text-xs leading-relaxed ${
-                          msg.sender === "user"
-                            ? "bg-indigo-600 text-white rounded-tr-none"
-                            : "bg-slate-100 text-slate-800 rounded-tl-none whitespace-pre-wrap font-sans"
-                        }`}>
-                          {msg.text}
-                        </div>
-                      </div>
-                    ))}
-                    {sendingMessage && (
-                      <div className="mr-auto max-w-[85%] flex flex-col items-start bg-slate-50 border border-slate-100 p-3 rounded-2xl rounded-tl-none text-xs">
-                        <span className="text-[9px] text-slate-400 mb-1">Mentor is thinking...</span>
-                        <div className="flex gap-1.5 py-1">
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" />
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.2s]" />
-                          <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce [animation-delay:0.4s]" />
-                        </div>
-                      </div>
-                    )}
-                    <div ref={chatEndRef} />
-                  </div>
-
-                  {/* Send panel */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                      placeholder="Type your question regarding Gboko businesses, budgeting, or cooperatives..."
-                      className="grow p-3 bg-slate-100 focus:bg-white border border-slate-200 rounded-xl text-xs transition-colors outline-slate-300"
-                    />
-                    <button
-                      onClick={() => handleSendMessage()}
-                      disabled={sendingMessage || !inputMessage.trim()}
-                      className="p-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl transition-colors shrink-0 flex items-center justify-center"
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                <BusinessAssistant decoyMode={decoyMode} />
               </motion.div>
             )}
 

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Report, UssdLanguage } from "../types";
+import { processClientUssd } from "../services/ussdEngine";
 
 interface UssdSimulatorProps {
   onReportCreated?: (newReport: Report) => void;
@@ -108,9 +109,11 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ onReportCreated })
     }
   ];
 
-  // Send request to backend USSD endpoint
+  // Send request to backend USSD endpoint with graceful client fallback
   const sendUssdRequest = async (fullText: string) => {
     setIsLoading(true);
+    let data: any = null;
+
     try {
       const res = await fetch("/api/ussd", {
         method: "POST",
@@ -122,8 +125,19 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ onReportCreated })
           text: fullText
         })
       });
-      const data = await res.json();
-      
+
+      if (res.ok) {
+        data = await res.json();
+      } else {
+        // Fallback for static hosting / GitHub pages
+        data = processClientUssd(fullText, phoneNumber.replace(/\s+/g, ""), sessionId);
+      }
+    } catch (err) {
+      console.warn("USSD server call failed, using client GSM engine", err);
+      data = processClientUssd(fullText, phoneNumber.replace(/\s+/g, ""), sessionId);
+    }
+
+    if (data) {
       setScreenMessage(data.message);
       setScreenAction(data.action);
       
@@ -149,14 +163,8 @@ export const UssdSimulator: React.FC<UssdSimulatorProps> = ({ onReportCreated })
         setSessionActive(true);
       }
       setUserInputBox("");
-    } catch (err) {
-      console.error("USSD call failed", err);
-      setScreenMessage("Connection error: Unable to reach GSM signalling server. Check SIM or signal.");
-      setScreenAction("END");
-      setSessionActive(false);
-    } finally {
-      setIsLoading(false);
     }
+    setIsLoading(false);
   };
 
   // Start new USSD session with the string in inputVal

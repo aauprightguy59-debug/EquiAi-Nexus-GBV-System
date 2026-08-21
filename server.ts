@@ -336,7 +336,7 @@ app.post("/api/reports", async (req, res) => {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.7-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -987,7 +987,7 @@ app.post("/api/reports/analyze-all", async (req, res) => {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.7-flash",
         contents: prompt,
       });
 
@@ -1041,7 +1041,7 @@ app.post("/api/chat", async (req, res) => {
       const previousHistory = chatMessages.slice(0, -1);
 
       const chat = ai.chats.create({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.7-flash",
         config: {
           systemInstruction: systemInstruction,
         },
