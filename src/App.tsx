@@ -32,7 +32,8 @@ import {
   WifiOff,
   Globe,
   Key,
-  ShieldCheck
+  ShieldCheck,
+  ExternalLink
 } from "lucide-react";
 import {
   BarChart,
@@ -1861,9 +1862,31 @@ export default function App() {
             </div>
           </div>
 
-          <div className="text-center md:text-right text-[11px]">
-            <p className="text-slate-400">Power by Gender & AI Innovation Collective.</p>
-            <p className="text-slate-500 mt-1">GECN-GBV AI Database &copy; {new Date().getFullYear()} GECN. Secure server sandbox routing enabled.</p>
+          <div className="text-center md:text-right text-[11px] max-w-md">
+            <p className="text-slate-300 leading-relaxed">
+              Powered by: The{" "}
+              <a
+                href="https://aplusalliance.org/gender-ai-innovation-collective/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gecn-gold hover:underline font-semibold inline-flex items-center gap-0.5 transition-colors hover:text-amber-300"
+              >
+                Gender &amp; AI Innovation Collective (GAIC)
+                <ExternalLink className="w-2.5 h-2.5 inline-block shrink-0 ml-0.5" />
+              </a>
+              , a pan-African initiative co-led by{" "}
+              <a
+                href="https://codeforafrica.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gecn-gold hover:underline font-semibold inline-flex items-center gap-0.5 transition-colors hover:text-amber-300"
+              >
+                Code for Africa (CfA)
+                <ExternalLink className="w-2.5 h-2.5 inline-block shrink-0 ml-0.5" />
+              </a>{" "}
+              and Women at the Table via the A+ Alliance.
+            </p>
+            <p className="text-slate-500 mt-1.5">GECN-GBV AI Database &copy; {new Date().getFullYear()} GECN. Secure server sandbox routing enabled.</p>
           </div>
         </div>
       </footer>
